@@ -61,6 +61,7 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 
 var getURL = function(url) {
 	restler.get(url).on('complete', function(result) {
+		console.log(result);
 		if (result instanceof Error) {
 			console.log("Error: " + result.message);
 			this.retry(5000);
@@ -80,11 +81,15 @@ if (require.main === module) {
 	program
 					.option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
 	.option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists))
-	.option('-u, --url <html_url>', 'URL of HTML', clone(getURL))
+	.option('-u, --url <html_url>', 'URL of HTML')
 	.parse(process.argv);
 	var checkJson;
 	var outJson;
+
+	console.log(program.url);
 	if (program.url) {
+		var html = getURL(program.url);
+		console.log(html);
 		checkJson = checkHtmlFile(program.url, program.checks);
 		outJson = JSON.stringify(checkJson, null, 4);
 	} else if (program.file) {
