@@ -59,9 +59,19 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 	return out;
 };
 
+var checkURL = function(url, checksfile) {
+	$ = cheerio.load(url);
+	var checks = loadChecks(checksfile).sort();
+	var out = {};
+	for (var ii in checks) {
+		var present = $(checks[ii]).length > 0;
+		out[checks[ii]] = present;
+	}
+	return out;
+};
+
 var getURL = function(url) {
 	restler.get(url).on('complete', function(result) {
-		console.log(result);
 		if (result instanceof Error) {
 			console.log("Error: " + result.message);
 			this.retry(5000);
@@ -79,18 +89,16 @@ var clone = function(fn) {
 
 if (require.main === module) {
 	program
-					.option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-	.option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists))
-	.option('-u, --url <html_url>', 'URL of HTML')
-	.parse(process.argv);
+		.option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
+		.option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists))
+		.option('-u, --url <html_url>', 'URL of HTML')
+		.parse(process.argv);
 	var checkJson;
 	var outJson;
 
-	console.log(program.url);
 	if (program.url) {
 		var html = getURL(program.url);
-		console.log(html);
-		checkJson = checkHtmlFile(program.url, program.checks);
+		checkJson = checkURL(program.url, program.checks);
 		outJson = JSON.stringify(checkJson, null, 4);
 	} else if (program.file) {
 		checkJson = checkHtmlFile(program.file, program.checks);
